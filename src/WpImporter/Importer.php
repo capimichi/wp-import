@@ -1,5 +1,6 @@
 <?php
 namespace WpImporter;
+
 use WpImporter\Single\Field\Field;
 use WpImporter\Single\Field\FieldBuilder;
 use WpImporter\Single\Post;
@@ -9,7 +10,8 @@ use WpImporter\Single\PostBuilder;
  * Class Importer
  * @package WpImporter
  */
-class Importer{
+class Importer
+{
 
     /**
      * @var string
@@ -20,6 +22,11 @@ class Importer{
      * @var string
      */
     protected $jsonPath;
+
+    /**
+     * @var string
+     */
+    protected $titleField;
 
     /**
      * @var string
@@ -42,6 +49,21 @@ class Importer{
     protected $postType;
 
     /**
+     * @var string
+     */
+    protected $postStatus;
+
+    /**
+     * @var bool
+     */
+    protected $verbose;
+
+    /**
+     * @var array
+     */
+    protected $downloadFields;
+
+    /**
      * @var array
      */
     protected $items;
@@ -51,19 +73,43 @@ class Importer{
      */
     public function __construct()
     {
+        $this->setTitleField("post_title");
+        $this->setWploadPath("wp-load.php");
+        $this->setJsonPath("items.json");
+        $this->setUpdateField("");
+        $this->setUpdateEnabled(false);
+        $this->setPostType("post");
+        $this->setPostStatus("publish");
+        $this->setVerbose(false);
+        $this->setDownloadFields(array());
     }
 
-    public function import(){
+    public function import()
+    {
         require_once $this->getWploadPath();
         $items = $this->getItems();
-        foreach ($items as $item){
-            $checkList = $this->getCheckList();
-            $postId = array_search($item->getFieldValueByName($this->getUpdateField()), $checkList);
-            if($postId){
-                $item->setId($postId);
+        $countItems = count($items);
+        foreach ($items as $key => $item) {
+            if ($this->isVerbose()) {
+                echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n";
+                $progress = round(($key / $countItems) * 100, 0);
+                echo "{$key} / {$countItems} - {$progress}%\n";
+                echo "Title:\t" . $item->getFieldValueByName($this->getTitleField()) . "\n";
+            }
+            if ($this->isUpdateEnabled()) {
+                $checkList = $this->getCheckList();
+                $postId = array_search($item->getFieldValueByName($this->getUpdateField()), $checkList);
+                if ($postId) {
+                    $item->setId($postId);
+                    if ($this->isVerbose()) {
+                        echo "Status:\t Already present\n";
+                    }
+                }
             }
             $item->save();
-            $checkList[$item->getId()] = $item->getFieldValueByName($this->getUpdateField());
+            if ($this->isUpdateEnabled()) {
+                $checkList[$item->getId()] = $item->getFieldValueByName($this->getUpdateField());
+            }
         }
         /*
          * per ogni item
@@ -72,6 +118,22 @@ class Importer{
          * se no all'item non gli metto l'id
          * do all'item il comando di salvare (lui saprà se deve creare o no in base all'id)
          */
+    }
+
+    /**
+     * @return string
+     */
+    public function getTitleField()
+    {
+        return $this->titleField;
+    }
+
+    /**
+     * @param string $titleField
+     */
+    public function setTitleField($titleField)
+    {
+        $this->titleField = $titleField;
     }
 
     /**
@@ -126,8 +188,9 @@ class Importer{
      * @param $file
      * @throws \Exception
      */
-    protected function checkLoader($file){
-        if(!is_readable($file)){
+    protected function checkLoader($file)
+    {
+        if (!is_readable($file)) {
             throw new \Exception("File not readable");
         }
     }
@@ -153,10 +216,10 @@ class Importer{
      */
     public function getCheckList()
     {
-        if(!isset($this->checkList)){
+        if (!isset($this->checkList)) {
             $checkList = [];
             global $wpdb;
-            switch ($this->getUpdateField()){
+            switch ($this->getUpdateField()) {
                 case "post_title":
                     $results = $wpdb->get_results(
                         $wpdb->prepare("
@@ -180,7 +243,7 @@ class Importer{
                     );
                     break;
             }
-            foreach($results as $result){
+            foreach ($results as $result) {
                 $checkList[$result["ID"]] = $result[$this->getUpdateField()];
             }
             $this->setCheckList($checkList);
@@ -215,14 +278,16 @@ class Importer{
     /**
      * @return array
      */
-    protected function getItems(){
-        if(!isset($this->items)){
+    protected function getItems()
+    {
+        if (!isset($this->items)) {
             $json = json_decode(file_get_contents($this->getJsonPath()));
             $items = [];
-            foreach($json as $item){
+            foreach ($json as $item) {
                 $postBuilder = (new PostBuilder())
+                    ->setVerbose($this->isVerbose())
                     ->setType($this->getPostType());
-                foreach($item as $key => $value){
+                foreach ($item as $key => $value) {
                     $field = (new FieldBuilder())
                         ->setKey($key)
                         ->setValue($value)
@@ -230,7 +295,7 @@ class Importer{
                     $postBuilder->addField($field);
                 }
                 $post = $postBuilder->build();
-                foreach($post->getFields() as $field){
+                foreach ($post->getFields() as $field) {
                     $field->setPost($post);
                 }
                 $items[] = $post;
@@ -247,5 +312,54 @@ class Importer{
     {
         $this->items = $items;
     }
+
+    /**
+     * @return string
+     */
+    public function getPostStatus()
+    {
+        return $this->postStatus;
+    }
+
+    /**
+     * @param string $postStatus
+     */
+    public function setPostStatus($postStatus)
+    {
+        $this->postStatus = $postStatus;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isVerbose()
+    {
+        return $this->verbose;
+    }
+
+    /**
+     * @param boolean $verbose
+     */
+    public function setVerbose($verbose)
+    {
+        $this->verbose = $verbose;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDownloadFields()
+    {
+        return $this->downloadFields;
+    }
+
+    /**
+     * @param array $downloadFields
+     */
+    public function setDownloadFields($downloadFields)
+    {
+        $this->downloadFields = $downloadFields;
+    }
+
 
 }

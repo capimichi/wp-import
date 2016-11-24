@@ -23,10 +23,19 @@ class Field
     protected $post;
 
     /**
+     * @var bool
+     */
+    protected $download;
+
+    /**
      * Field constructor.
      */
     public function __construct()
     {
+        $this->setKey("");
+        $this->setValue("");
+        $this->setPost(null);
+        $this->setDownload(false);
     }
 
     /**
@@ -79,28 +88,71 @@ class Field
 
     public function save()
     {
-        switch ($this->getKey()) {
-            case "post_title":
-                wp_update_post(array(
-                    'ID' => $this->getId(),
-                    'post_title' => $this->getValue()
-                ));
-                break;
-            default:
-                if (!is_array($this->getValue())) {
-                    $this->setValue(array($this->getValue()));
-                }
+        if($this->isTitleField()){
+            wp_update_post(array(
+                'ID' => $this->getId(),
+                'post_title' => $this->getValue()
+            ));
+        } else {
+            $values = is_array($this->getValue()) ? $this->getValue() : array($this->getValue());
+            if($this->isDownload()){
+
+            } else {
                 delete_post_meta($this->getId(), $this->getKey());
-                foreach ($this->getValue() as $value) {
+                foreach ($values as $value) {
+                    // TODO: Is downloadable url
                     add_post_meta($this->getId(), $this->getKey(), $value);
+                    if($this->isVerbose()){
+                        echo "{$this->getKey()}:\t {$this->getValue()}\n";
+                    }
                 }
-                break;
+            }
         }
     }
 
+    /**
+     * @return boolean
+     */
+    public function isDownload()
+    {
+        return $this->download;
+    }
+
+    /**
+     * @param boolean $download
+     */
+    public function setDownload($download)
+    {
+        $this->download = $download;
+    }
+
+    /**
+     * @return int
+     */
     protected function getId()
     {
         return $this->getPost()->getId();
     }
 
+    /**
+     * @return string
+     */
+    protected function getStatus()
+    {
+        return $this->getPost()->getStatus();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isTitleField(){
+        return $this->getKey() == $this->getPost()->getTitleField();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isVerbose(){
+        return $this->getPost()->isVerbose();
+    }
 }

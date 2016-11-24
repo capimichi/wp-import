@@ -21,6 +21,15 @@ class PostBuilder{
     }
 
     /**
+     * @param string $field
+     * @return ImporterBuilder $this
+     */
+    public function setTitleField($field){
+        $this->post->setTitleField($field);
+        return $this;
+    }
+
+    /**
      * @param string $type
      * @return PostBuilder $this
      */
@@ -37,6 +46,24 @@ class PostBuilder{
         $fields = $this->post->getFields();
         $fields[] = $field;
         $this->post->setFields($fields);
+        return $this;
+    }
+
+    /**
+     * @param string $status
+     * @return PostBuilder $this
+     */
+    public function setStatus($status){
+        $this->post->setStatus($status);
+        return $this;
+    }
+
+    /**
+     * @param bool $verbose
+     * @return PostBuilder $this
+     */
+    public function setVerbose($verbose){
+        $this->post->setVerbose($verbose);
         return $this;
     }
 

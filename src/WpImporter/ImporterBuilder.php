@@ -42,6 +42,15 @@ class ImporterBuilder{
      * @param string $field
      * @return ImporterBuilder $this
      */
+    public function setTitleField($field){
+        $this->importer->setTitleField($field);
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @return ImporterBuilder $this
+     */
     public function setUpdateField($field){
         $this->importer->setUpdateField($field);
         return $this;
@@ -53,6 +62,44 @@ class ImporterBuilder{
      */
     public function setPostType($type){
         $this->importer->setPostType($type);
+        return $this;
+    }
+
+    /**
+     * @param bool $enabled
+     * @return ImporterBuilder $this
+     */
+    public function setUpdateEnabled($enabled){
+        $this->importer->setUpdateEnabled($enabled);
+        return $this;
+    }
+
+    /**
+     * @param string $status
+     * @return ImporterBuilder $this
+     */
+    public function setPostStatus($status){
+        $this->importer->setPostStatus($status);
+        return $this;
+    }
+
+    /**
+     * @param bool $verbose
+     * @return ImporterBuilder $this
+     */
+    public function setVerbose($verbose){
+        $this->importer->setVerbose($verbose);
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @return ImporterBuilder $this
+     */
+    public function addDownloadField($field){
+        $fields = $this->importer->getDownloadFields();
+        $fields[] = $field;
+        $this->importer->setDownloadFields($fields);
         return $this;
     }
 
