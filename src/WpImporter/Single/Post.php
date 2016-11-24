@@ -179,5 +179,4 @@ class Post{
     {
         $this->verbose = $verbose;
     }
-
 }

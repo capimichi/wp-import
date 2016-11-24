@@ -96,7 +96,21 @@ class Field
         } else {
             $values = is_array($this->getValue()) ? $this->getValue() : array($this->getValue());
             if($this->isDownload()){
-
+//                foreach($values as $value){
+//                    $content = file_get_contents($value);
+//                    $contentMd5 = md5($content);
+//                    $contentFound = false;
+//                    foreach(get_post_meta($this->getId(), $this->getKey()) as $url){
+//                        $contentPresent = file_get_contents($url);
+//                        $contentPresentMd5 = md5($contentPresent);
+//                        if($contentMd5 == $contentPresentMd5){
+//                            $contentFound = true;
+//                        }
+//                    }
+//                    if(!$contentFound){
+//
+//                    }
+//                }
             } else {
                 delete_post_meta($this->getId(), $this->getKey());
                 foreach ($values as $value) {

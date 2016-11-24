@@ -49,6 +49,15 @@ class FieldBuilder{
         return $this;
     }
 
+    /**
+     * @param bool $download
+     * @return FieldBuilder $this
+     */
+    public function setDownload($download){
+        $this->field->setDownload($download);
+        return $this;
+    }
+
     public function validate(){
 
     }

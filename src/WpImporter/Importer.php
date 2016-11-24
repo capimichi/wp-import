@@ -29,14 +29,9 @@ class Importer
     protected $titleField;
 
     /**
-     * @var string
+     * @var string|bool
      */
     protected $updateField;
-
-    /**
-     * @var bool
-     */
-    protected $updateEnabled;
 
     /**
      * @var array
@@ -76,8 +71,7 @@ class Importer
         $this->setTitleField("post_title");
         $this->setWploadPath("wp-load.php");
         $this->setJsonPath("items.json");
-        $this->setUpdateField("");
-        $this->setUpdateEnabled(false);
+        $this->setUpdateField(false);
         $this->setPostType("post");
         $this->setPostStatus("publish");
         $this->setVerbose(false);
@@ -96,7 +90,7 @@ class Importer
                 echo "{$key} / {$countItems} - {$progress}%\n";
                 echo "Title:\t" . $item->getFieldValueByName($this->getTitleField()) . "\n";
             }
-            if ($this->isUpdateEnabled()) {
+            if ($this->getUpdateField() !== false) {
                 $checkList = $this->getCheckList();
                 $postId = array_search($item->getFieldValueByName($this->getUpdateField()), $checkList);
                 if ($postId) {
@@ -107,17 +101,11 @@ class Importer
                 }
             }
             $item->save();
-            if ($this->isUpdateEnabled()) {
+            if ($this->getUpdateField() !== false) {
                 $checkList[$item->getId()] = $item->getFieldValueByName($this->getUpdateField());
             }
         }
-        /*
-         * per ogni item
-         * controllo se è presente nel db
-         * se si all'item gli metto l'id
-         * se no all'item non gli metto l'id
-         * do all'item il comando di salvare (lui saprà se deve creare o no in base all'id)
-         */
+
     }
 
     /**
@@ -169,7 +157,7 @@ class Importer
     }
 
     /**
-     * @return string
+     * @return string|bool
      */
     public function getUpdateField()
     {
@@ -177,7 +165,7 @@ class Importer
     }
 
     /**
-     * @param string $updateField
+     * @param string|bool $updateField
      */
     public function setUpdateField($updateField)
     {
@@ -196,22 +184,6 @@ class Importer
     }
 
     /**
-     * @return boolean
-     */
-    public function isUpdateEnabled()
-    {
-        return $this->updateEnabled;
-    }
-
-    /**
-     * @param boolean $updateEnabled
-     */
-    public function setUpdateEnabled($updateEnabled)
-    {
-        $this->updateEnabled = $updateEnabled;
-    }
-
-    /**
      * @return array
      */
     public function getCheckList()
@@ -220,7 +192,7 @@ class Importer
             $checkList = [];
             global $wpdb;
             switch ($this->getUpdateField()) {
-                case "post_title":
+                case $this->getTitleField():
                     $results = $wpdb->get_results(
                         $wpdb->prepare("
                         SELECT ID, post_title 
@@ -229,7 +201,6 @@ class Importer
                         ARRAY_A
                     );
                     break;
-
                 default:
                     $query = $wpdb->prepare("
                         SELECT ID, meta_value 
@@ -290,8 +261,11 @@ class Importer
                 foreach ($item as $key => $value) {
                     $field = (new FieldBuilder())
                         ->setKey($key)
-                        ->setValue($value)
-                        ->build();
+                        ->setValue($value);
+                    if(in_array($key, $this->getDownloadFields())){
+                        $field->setDownload(true);
+                    }
+                    $field = $field->build();
                     $postBuilder->addField($field);
                 }
                 $post = $postBuilder->build();

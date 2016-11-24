@@ -67,6 +67,17 @@ class PostBuilder{
         return $this;
     }
 
+    /**
+     * @param string $field
+     * @return PostBuilder $this
+     */
+    public function addDownloadField($field){
+        $fields = $this->post->getDownloadFields();
+        $fields[] = $field;
+        $this->post->setDownloadFields($fields);
+        return $this;
+    }
+
     public function validate(){
 
     }

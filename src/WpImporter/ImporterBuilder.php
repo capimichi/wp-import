@@ -66,15 +66,6 @@ class ImporterBuilder{
     }
 
     /**
-     * @param bool $enabled
-     * @return ImporterBuilder $this
-     */
-    public function setUpdateEnabled($enabled){
-        $this->importer->setUpdateEnabled($enabled);
-        return $this;
-    }
-
-    /**
      * @param string $status
      * @return ImporterBuilder $this
      */
