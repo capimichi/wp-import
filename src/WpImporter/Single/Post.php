@@ -21,15 +21,11 @@ class Post{
     protected $type;
 
     /**
-     * Single constructor.
-     * @param \stdClass $obj
+     * Post constructor.
      */
-    public function __construct($obj)
+    public function __construct()
     {
-        $fields = [];
-        foreach($obj as $key => $value){
-            $fields[] = new Field($key, $value);
-        }
+
     }
 
     /**
@@ -80,13 +76,28 @@ class Post{
         $this->type = $type;
     }
 
+    /**
+     * @param string $name
+     * @return string
+     */
     public function getFieldValueByName($name){
         return $this->getFields()[$name];
     }
 
+
     public function save(){
         if(!isset($this->id)){
-
+            $id = wp_insert_post(
+                array(
+                    "post_type" => $this->getType(),
+                    "post_title" => $this->getFieldValueByName("post_title"),
+                    "post_name" => $this->getFieldValueByName("post_title")
+                )
+            );
+            $this->setId($id);
+        }
+        foreach($this->getFields() as $field){
+            $field->save();
         }
     }
 }

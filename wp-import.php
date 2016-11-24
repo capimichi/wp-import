@@ -8,7 +8,7 @@ $builder = new ImporterBuilder();
 $jsonpath = $argv[1];
 $importer = $builder->setJsonPath($jsonpath)
         ->setWploadPath("wp-load.php")
-        ->setPostType("post")
+        ->setPostType("prova")
         ->setUpdateField("post_title")
         ->build();
 $importer->import();

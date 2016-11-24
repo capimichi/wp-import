@@ -1,7 +1,9 @@
 <?php
 namespace WpImporter;
 use WpImporter\Single\Field\Field;
+use WpImporter\Single\Field\FieldBuilder;
 use WpImporter\Single\Post;
+use WpImporter\Single\PostBuilder;
 
 /**
  * Class Importer
@@ -40,6 +42,11 @@ class Importer{
     protected $postType;
 
     /**
+     * @var array
+     */
+    protected $items;
+
+    /**
      * Importer constructor.
      */
     public function __construct()
@@ -56,6 +63,7 @@ class Importer{
                 $item->setId($postId);
             }
             $item->save();
+            $checkList[$item->getId()] = $item->getFieldValueByName($this->getUpdateField());
         }
         /*
          * per ogni item
@@ -175,6 +183,7 @@ class Importer{
             foreach($results as $result){
                 $checkList[$result["ID"]] = $result[$this->getUpdateField()];
             }
+            $this->setCheckList($checkList);
         }
         return $this->checkList;
     }
@@ -203,13 +212,40 @@ class Importer{
         $this->postType = $postType;
     }
 
+    /**
+     * @return array
+     */
     protected function getItems(){
-        $json = json_decode(file_get_contents($this->getJsonPath()));
-        $items = [];
-        foreach($json as $item){
-            $items[] = new Post($item);
+        if(!isset($this->items)){
+            $json = json_decode(file_get_contents($this->getJsonPath()));
+            $items = [];
+            foreach($json as $item){
+                $postBuilder = (new PostBuilder())
+                    ->setType($this->getPostType());
+                foreach($item as $key => $value){
+                    $field = (new FieldBuilder())
+                        ->setKey($key)
+                        ->setValue($value)
+                        ->build();
+                    $postBuilder->addField($field);
+                }
+                $post = $postBuilder->build();
+                foreach($post->getFields() as $field){
+                    $field->setPost($post);
+                }
+                $items[] = $post;
+            }
+            $this->setItems($items);
         }
-        return $items;
+        return $this->items;
+    }
+
+    /**
+     * @param array $items
+     */
+    public function setItems($items)
+    {
+        $this->items = $items;
     }
 
 }
