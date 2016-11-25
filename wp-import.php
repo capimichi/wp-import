@@ -17,12 +17,24 @@ $builder->setJsonPath($jsonPath)
     ->setWploadPath($wpLoad)
     ->setPostType($postType)
     ->setVerbose($verbose)
-    ->setTitleField($titleField);
-$builder->setUpdateField($updateField);
-if ($downloadFields !== false) {
-    $downloadFields = explode(",", $downloadFields);
-    foreach($downloadFields as $field){
+    ->setTitleField($titleField)
+    ->setUpdateField($updateField);
+$downloadFields = $cli->getDownloadFields();
+if($downloadFields) {
+    foreach ($downloadFields as $field) {
         $builder->addDownloadField($field);
+    }
+}
+$termsField = $cli->getTaxonomysFields();
+if($termsField) {
+    foreach ($termsField as $key => $field) {
+        $builder->addTaxonomyField($key, $field);
+    }
+}
+$ignoreFields = $cli->getIgnoreFields();
+if($ignoreFields) {
+    foreach ($ignoreFields as $field) {
+        $builder->addIgnoreField($field);
     }
 }
 $importer = $builder->build();

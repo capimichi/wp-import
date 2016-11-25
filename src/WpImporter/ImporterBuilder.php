@@ -94,6 +94,29 @@ class ImporterBuilder{
         return $this;
     }
 
+    /**
+     * @param string $key
+     * @param string $value
+     * @return ImporterBuilder $this
+     */
+    public function addTaxonomyField($key, $value){
+        $taxonomys = $this->importer->getTaxonomysFields();
+        $taxonomys[$key] = $value;
+        $this->importer->setTaxonomysFields($taxonomys);
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @return ImporterBuilder $this
+     */
+    public function addIgnoreField($field){
+        $fields = $this->importer->getIgnoreFields();
+        $fields[] = $field;
+        $this->importer->setIgnoreFields($fields);
+        return $this;
+    }
+
     public function validate(){
 
     }

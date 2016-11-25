@@ -50,11 +50,38 @@ class FieldBuilder{
     }
 
     /**
+     * @param bool $title
+     * @return FieldBuilder $this
+     */
+    public function setTitle($title){
+        $this->field->setTitle($title);
+        return $this;
+    }
+
+    /**
      * @param bool $download
      * @return FieldBuilder $this
      */
     public function setDownload($download){
         $this->field->setDownload($download);
+        return $this;
+    }
+
+    /**
+     * @param string|bool $taxonomy
+     * @return FieldBuilder $this
+     */
+    public function setTaxonomy($taxonomy){
+        $this->field->setTaxonomy($taxonomy);
+        return $this;
+    }
+
+    /**
+     * @param bool $ignore
+     * @return FieldBuilder $this
+     */
+    public function setIgnore($ignore){
+        $this->field->setIgnore($ignore);
         return $this;
     }
 

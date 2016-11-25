@@ -131,8 +131,8 @@ class Post{
             $id = wp_insert_post(
                 array(
                     "post_type" => $this->getType(),
-                    "post_title" => $this->getFieldValueByName("post_title"),
-                    "post_name" => $this->getFieldValueByName("post_title"),
+                    "post_title" => $this->getFieldValueByName($this->getTitleField()),
+                    "post_name" => $this->getFieldValueByName($this->getTitleField()),
                     "post_status" => $this->getStatus()
                 )
             );

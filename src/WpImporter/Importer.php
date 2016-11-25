@@ -61,6 +61,16 @@ class Importer
     /**
      * @var array
      */
+    protected $taxonomysFields;
+
+    /**
+     * @var array
+     */
+    protected $ignoreFields;
+
+    /**
+     * @var array
+     */
     protected $items;
 
     /**
@@ -83,6 +93,9 @@ class Importer
         require_once $this->getWploadPath();
         $items = $this->getItems();
         $countItems = count($items);
+        if ($this->getUpdateField() !== false) {
+            $checkList = $this->getCheckList();
+        }
         foreach ($items as $key => $item) {
             if ($this->isVerbose()) {
                 echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n";
@@ -91,7 +104,6 @@ class Importer
                 echo "Title:\t" . $item->getFieldValueByName($this->getTitleField()) . "\n";
             }
             if ($this->getUpdateField() !== false) {
-                $checkList = $this->getCheckList();
                 $postId = array_search($item->getFieldValueByName($this->getUpdateField()), $checkList);
                 if ($postId) {
                     $item->setId($postId);
@@ -195,7 +207,7 @@ class Importer
                 case $this->getTitleField():
                     $results = $wpdb->get_results(
                         $wpdb->prepare("
-                        SELECT ID, post_title 
+                        SELECT ID, post_title AS {$this->getUpdateField()}
                         FROM {$wpdb->posts} 
                         WHERE post_type = %s", $this->getPostType()),
                         ARRAY_A
@@ -257,13 +269,30 @@ class Importer
             foreach ($json as $item) {
                 $postBuilder = (new PostBuilder())
                     ->setVerbose($this->isVerbose())
-                    ->setType($this->getPostType());
+                    ->setType($this->getPostType())
+                    ->setTitleField($this->getTitleField());
                 foreach ($item as $key => $value) {
                     $field = (new FieldBuilder())
                         ->setKey($key)
                         ->setValue($value);
-                    if(in_array($key, $this->getDownloadFields())){
-                        $field->setDownload(true);
+                    if($key == $this->getTitleField()){
+                        $field->setTitle(true);
+                    }
+                    if($this->getDownloadFields()) {
+                        if (in_array($key, $this->getDownloadFields())) {
+                            $field->setDownload(true);
+                        }
+                    }
+                    if($this->getTaxonomysFields()) {
+                        $taxonomy = array_search($key, $this->getTaxonomysFields());
+                        if ($taxonomy) {
+                            $field->setTaxonomy($taxonomy);
+                        }
+                    }
+                    if($this->getIgnoreFields()) {
+                        if (in_array($key, $this->getIgnoreFields())) {
+                            $field->setIgnore(true);
+                        }
                     }
                     $field = $field->build();
                     $postBuilder->addField($field);
@@ -335,5 +364,36 @@ class Importer
         $this->downloadFields = $downloadFields;
     }
 
+    /**
+     * @return array
+     */
+    public function getTaxonomysFields()
+    {
+        return $this->taxonomysFields;
+    }
+
+    /**
+     * @param array $taxonomysFields
+     */
+    public function setTaxonomysFields($taxonomysFields)
+    {
+        $this->taxonomysFields = $taxonomysFields;
+    }
+
+    /**
+     * @return array
+     */
+    public function getIgnoreFields()
+    {
+        return $this->ignoreFields;
+    }
+
+    /**
+     * @param array $ignoreFields
+     */
+    public function setIgnoreFields($ignoreFields)
+    {
+        $this->ignoreFields = $ignoreFields;
+    }
 
 }
