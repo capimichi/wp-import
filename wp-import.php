@@ -18,6 +18,8 @@ $builder->setJsonPath($jsonPath)
     ->setPostType($postType)
     ->setVerbose($verbose)
     ->setTitleField($titleField)
+    ->setFeaturedField($featuredField)
+    ->setWoocommerceType($woocommerceType)
     ->setUpdateField($updateField);
 $downloadFields = $cli->getDownloadFields();
 if($downloadFields) {

@@ -13,6 +13,7 @@ class ImporterCli{
         $longOptions = array(
             "postType::",
             "wpLoad::",
+            "woocommerceType::",
             "updateEnabled::",
             "titleField::",
             "updateField::",
@@ -32,6 +33,7 @@ class ImporterCli{
         $defaultOptions = array(
             "postType" => "post",
             "wpLoad" => "wp-load.php",
+            "woocommerceType" => false,
             "titleField" => "post_title",
             "featuredField" => false,
             "updateField" => false,
@@ -50,6 +52,7 @@ class ImporterCli{
         $legendFields = array(
             "postType" => "post",
             "wpLoad" => "wp-load.php",
+            "woocommerceType" => "external",
             "titleField" => "post_title",
             "featuredField" => "myFieldImage",
             "updateField" => "myUpdateField",

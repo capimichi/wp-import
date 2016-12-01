@@ -59,6 +59,15 @@ class FieldBuilder{
     }
 
     /**
+     * @param bool $featured
+     * @return FieldBuilder $this
+     */
+    public function setFeatured($featured){
+        $this->field->setFeatured($featured);
+        return $this;
+    }
+
+    /**
      * @param bool $download
      * @return FieldBuilder $this
      */

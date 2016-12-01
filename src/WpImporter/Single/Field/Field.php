@@ -30,6 +30,11 @@ class Field
     /**
      * @var bool
      */
+    protected $featured;
+
+    /**
+     * @var bool
+     */
     protected $download;
 
     /**
@@ -118,30 +123,36 @@ class Field
         } else {
             $values = is_array($this->getValue()) ? $this->getValue() : array($this->getValue());
             if(!$this->isIgnore()) {
-                if ($this->isDownload()) {
-                    $md5List = $this->getDownloadedImagesMd5();
-                    foreach($values as $value){
-                        $imageContent = file_get_contents($value);
-                        $imageMd5 = md5($imageContent);
-                        if(!in_array($imageMd5, $md5List)){
-                            $md5List[] = $imageMd5;
-                            $imageName = sanitize_file_name($value);
-                            $file = wp_upload_bits($imageName . ".png", null, $imageContent);
-                            $filename = $file['file'];
-                            $filetype = wp_check_filetype(basename($filename), null);
-                            $wp_upload_dir = wp_upload_dir();
-                            $attachment = array(
-                                'guid' => $wp_upload_dir['url'] . '/' . basename($filename),
-                                'post_mime_type' => $filetype['type'],
-                                'post_title' => preg_replace('/\.[^.]+$/', '', basename($filename)),
-                                'post_content' => '',
-                                'post_status' => 'inherit'
-                            );
-                            $attachId = wp_insert_attachment($attachment, $filename, $this->getId());
-                            require_once(ABSPATH . 'wp-admin/includes/image.php');
-                            $attach_data = wp_generate_attachment_metadata($attachId, $filename);
-                            wp_update_attachment_metadata($attachId, $attach_data);
-                            add_post_meta($this->getId(), $this->getKey(), $file['url']);
+                if ($this->isDownload() || $this->isFeatured()) {
+                    if($this->isFeatured() && !has_post_thumbnail($this->getId())) {
+                        $md5List = $this->getDownloadedImagesMd5();
+                        foreach ($values as $value) {
+                            $imageContent = file_get_contents($value);
+                            $imageMd5 = md5($imageContent);
+                            if (!in_array($imageMd5, $md5List)) {
+                                $md5List[] = $imageMd5;
+                                $imageName = sanitize_file_name($this->getPost()->getFieldValueByName($this->getPost()->getTitleField()));
+                                $file = wp_upload_bits($imageName . ".png", null, $imageContent);
+                                $filename = $file['file'];
+                                $filetype = wp_check_filetype(basename($filename), null);
+                                $wp_upload_dir = wp_upload_dir();
+                                $attachment = array(
+                                    'guid' => $wp_upload_dir['url'] . '/' . basename($filename),
+                                    'post_mime_type' => $filetype['type'],
+                                    'post_title' => preg_replace('/\.[^.]+$/', '', basename($filename)),
+                                    'post_content' => '',
+                                    'post_status' => 'inherit'
+                                );
+                                $attachId = wp_insert_attachment($attachment, $filename, $this->getId());
+                                require_once(ABSPATH . 'wp-admin/includes/image.php');
+                                $attach_data = wp_generate_attachment_metadata($attachId, $filename);
+                                wp_update_attachment_metadata($attachId, $attach_data);
+                                if ($this->isFeatured()) {
+                                    set_post_thumbnail($this->getId(), $attachId);
+                                } else {
+                                    add_post_meta($this->getId(), $this->getKey(), $file['url']);
+                                }
+                            }
                         }
                     }
                 } else {
@@ -178,6 +189,22 @@ class Field
     public function setTitle($title)
     {
         $this->title = $title;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isFeatured()
+    {
+        return $this->featured;
+    }
+
+    /**
+     * @param boolean $featured
+     */
+    public function setFeatured($featured)
+    {
+        $this->featured = $featured;
     }
 
     /**

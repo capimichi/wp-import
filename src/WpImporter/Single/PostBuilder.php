@@ -68,6 +68,15 @@ class PostBuilder{
     }
 
     /**
+     * @param bool|string $woocommerceType
+     */
+    public function setWoocommerceType($woocommerceType)
+    {
+        $this->post->setWoocommerceType($woocommerceType);
+        return $this;
+    }
+
+    /**
      * @param string $field
      * @return PostBuilder $this
      */

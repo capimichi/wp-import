@@ -31,6 +31,16 @@ class Importer
     /**
      * @var string|bool
      */
+    protected $woocommerceType;
+
+    /**
+     * @var string
+     */
+    protected $featuredField;
+
+    /**
+     * @var string|bool
+     */
     protected $updateField;
 
     /**
@@ -79,6 +89,7 @@ class Importer
     public function __construct()
     {
         $this->setTitleField("post_title");
+        $this->setFeaturedField(false);
         $this->setWploadPath("wp-load.php");
         $this->setJsonPath("items.json");
         $this->setUpdateField(false);
@@ -86,6 +97,7 @@ class Importer
         $this->setPostStatus("publish");
         $this->setVerbose(false);
         $this->setDownloadFields(array());
+        $this->setWoocommerceType(false);
     }
 
     public function import()
@@ -134,6 +146,38 @@ class Importer
     public function setTitleField($titleField)
     {
         $this->titleField = $titleField;
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getWoocommerceType()
+    {
+        return $this->woocommerceType;
+    }
+
+    /**
+     * @param bool|string $woocommerceType
+     */
+    public function setWoocommerceType($woocommerceType)
+    {
+        $this->woocommerceType = $woocommerceType;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFeaturedField()
+    {
+        return $this->featuredField;
+    }
+
+    /**
+     * @param string $featuredField
+     */
+    public function setFeaturedField($featuredField)
+    {
+        $this->featuredField = $featuredField;
     }
 
     /**
@@ -270,13 +314,17 @@ class Importer
                 $postBuilder = (new PostBuilder())
                     ->setVerbose($this->isVerbose())
                     ->setType($this->getPostType())
-                    ->setTitleField($this->getTitleField());
+                    ->setTitleField($this->getTitleField())
+                    ->setWoocommerceType($this->getWoocommerceType());
                 foreach ($item as $key => $value) {
                     $field = (new FieldBuilder())
                         ->setKey($key)
                         ->setValue($value);
                     if($key == $this->getTitleField()){
                         $field->setTitle(true);
+                    }
+                    if($key == $this->getFeaturedField()){
+                        $field->setFeatured(true);
                     }
                     if($this->getDownloadFields()) {
                         if (in_array($key, $this->getDownloadFields())) {

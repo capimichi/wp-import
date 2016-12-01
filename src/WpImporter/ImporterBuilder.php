@@ -48,6 +48,25 @@ class ImporterBuilder{
     }
 
     /**
+     * @param bool|string $woocommerceType
+     * @return ImporterBuilder $this
+     */
+    public function setWoocommerceType($woocommerceType)
+    {
+        $this->importer->setWoocommerceType($woocommerceType);
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @return ImporterBuilder $this
+     */
+    public function setFeaturedField($field){
+        $this->importer->setFeaturedField($field);
+        return $this;
+    }
+
+    /**
      * @param string $field
      * @return ImporterBuilder $this
      */
